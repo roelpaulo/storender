@@ -1,35 +1,30 @@
+# Environment
 .env
 .env.*
+!.env.example
 
-# Composer vendor
+# Dependencies
 /vendor/
-
-# Node modules
 /node_modules/
 
-# Build / cache
-/build/
-/dist/
-/.cache/
-/.sass-cache/
+# Runtime storage
+/storage/*
+!/storage/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Logs and caches
+*.log
 /.phpunit.result.cache
 
-# Logs and runtime files
-/logs/
-*.log
-/tmp/
+# Databases
+*.sqlite
+*.sqlite3
+*.db
 
-# Storage (runtime uploads, caches)
-/storage/
-
-# IDEs and editors
-/.idea/
+# Editors/OS
+.idea/
 .vscode/
-*.swp
-
-# OS files
 .DS_Store
-Thumbs.db
-
-# Docker overrides
-docker-compose.override.yml
+npm-debug.log*
+yarn-error.log*
