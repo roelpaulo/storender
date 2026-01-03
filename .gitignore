@@ -1,0 +1,35 @@
+.env
+.env.*
+
+# Composer vendor
+/vendor/
+
+# Node modules
+/node_modules/
+
+# Build / cache
+/build/
+/dist/
+/.cache/
+/.sass-cache/
+/.phpunit.result.cache
+
+# Logs and runtime files
+/logs/
+*.log
+/tmp/
+
+# Storage (runtime uploads, caches)
+/storage/
+
+# IDEs and editors
+/.idea/
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker overrides
+docker-compose.override.yml
