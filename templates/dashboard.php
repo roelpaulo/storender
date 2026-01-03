@@ -365,7 +365,7 @@
       },
 
       async loadProjects() {
-        const res = await fetch('/api/projects');
+        const res = await fetch('/api/projects', { credentials: 'same-origin' });
         if (res.ok) this.projects = await res.json();
       },
 
@@ -376,13 +376,13 @@
 
       async loadFiles() {
         if (!this.currentProject) return;
-        const res = await fetch(`/api/projects/${this.currentProject.id}/files`);
+        const res = await fetch(`/api/projects/${this.currentProject.id}/files`, { credentials: 'same-origin' });
         if (res.ok) this.files = await res.json();
       },
 
       async loadKeys() {
         if (!this.currentProject) return;
-        const res = await fetch(`/api/projects/${this.currentProject.id}/keys`);
+        const res = await fetch(`/api/projects/${this.currentProject.id}/keys`, { credentials: 'same-origin' });
         if (res.ok) this.apiKeys = await res.json();
       },
 
@@ -398,6 +398,7 @@
       async updateProjectSettings() {
         const res = await fetch(`/api/projects/${this.currentProject.id}`, {
           method: 'PATCH',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ allowed_domains: this.modalData.allowedDomains })
         });
@@ -418,6 +419,7 @@
       async createProject() {
         const res = await fetch('/api/projects', {
           method: 'POST',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: this.modalData.projectName })
         });
@@ -432,6 +434,7 @@
       async createKey() {
         const res = await fetch(`/api/projects/${this.currentProject.id}/keys`, {
           method: 'POST',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ label: this.modalData.keyLabel })
         });
@@ -457,7 +460,7 @@
           'Revoke Key'
         )) return;
 
-        const res = await fetch(`/api/keys/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/keys/${id}`, { method: 'DELETE', credentials: 'same-origin' });
         if (res.ok) {
           await this.loadKeys();
           window.dispatchEvent(new CustomEvent('notify', { detail: { message: 'Key revoked', type: 'info' } }));
@@ -518,6 +521,7 @@
 
         const res = await fetch(`/api/files/${id}`, {
           method: 'DELETE',
+          credentials: 'same-origin',
           headers: { 'X-Project-ID': this.currentProject.id }
         });
         if (res.ok) {
@@ -533,6 +537,7 @@
         const newStatus = file.is_public ? 0 : 1;
         const res = await fetch(`/api/files/${file.id}`, {
           method: 'PATCH',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_public: newStatus })
         });
@@ -556,7 +561,7 @@
           'Delete Project'
         )) return;
 
-        const res = await fetch(`/api/projects/${this.currentProject.id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/projects/${this.currentProject.id}`, { method: 'DELETE', credentials: 'same-origin' });
         if (res.ok) {
           this.projects = this.projects.filter(p => p.id !== this.currentProject.id);
           this.currentProject = null;
