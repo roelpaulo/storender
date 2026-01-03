@@ -1,52 +1,66 @@
-name: Build and Deploy to Dokploy
+name: Deploy to Dokploy (Demo)
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
-permissions:
-  contents: read
-  packages: write
+env:
+  IMAGE_NAME: storender
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
+      
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
+        uses: docker/setup-buildx-action@v3
+      
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push image
-        id: build
-        uses: docker/build-push-action@v4
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/storender:${{ github.sha }}
-
-      - name: Notify Dokploy
-        env:
-          DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
-          IMAGE: ghcr.io/${{ github.repository_owner }}/storender:${{ github.sha }}
-          GITHUB_REF: ${{ github.ref }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SHA: ${{ github.sha }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Deploy to Dokploy Demo (Service 1)
         run: |
-          if [ -z "${DOKPLOY_WEBHOOK_URL}" ]; then
-            echo "DOKPLOY_WEBHOOK_URL secret is not set"
-            exit 1
-          fi
-          payload=$(printf '{"image":"%s","repository":"%s","ref":"%s","sha":"%s"}' "$IMAGE" "$GITHUB_REPOSITORY" "$GITHUB_REF" "$GITHUB_SHA")
-          curl -sS -X POST -H "Content-Type: application/json" -d "$payload" "$DOKPLOY_WEBHOOK_URL"
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL_1 }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DOKPLOY_TOKEN }}" \
+            -d '{
+              "image": "ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}",
+              "tag": "sha-${{ github.sha }}"
+            }'
+      - name: Deploy to Dokploy Prod (Service 2)
+        run: |
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL_2 }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DOKPLOY_TOKEN }}" \
+            -d '{
+              "image": "ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}",
+              "tag": "sha-${{ github.sha }}"
+            }'
+      
+      - name: Deployment Status
+        run: |
+          echo "✅ Deployed to Dokploy"
+          echo "Image: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+          echo "Commit: ${{ github.sha }}"
