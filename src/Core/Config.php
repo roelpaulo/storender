@@ -11,8 +11,18 @@ class Config
     public static function load()
     {
         if (self::$dotenv === null) {
-            self::$dotenv = Dotenv::createImmutable(dirname(__DIR__, 2));
-            self::$dotenv->load();
+            $root = dirname(__DIR__, 2);
+            $envFile = $root . '/.env';
+
+            // Only attempt to load dotenv if a .env file exists in project root.
+            // In production we expect env vars to be provided by the host (no file).
+            if (is_file($envFile)) {
+                self::$dotenv = Dotenv::createImmutable($root);
+                self::$dotenv->load();
+            } else {
+                // Mark as loaded (no file) to avoid repeated checks
+                self::$dotenv = false;
+            }
         }
     }
 
