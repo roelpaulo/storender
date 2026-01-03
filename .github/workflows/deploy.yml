@@ -1,4 +1,4 @@
-name: Deploy to Dokploy (Demo)
+name: Deploy to Dokploy
 
 on:
   push:
@@ -40,18 +40,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
-      - name: Deploy to Dokploy Demo (Service 1)
+      - name: Deploy to Dokploy
         run: |
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL_1 }}" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.DOKPLOY_TOKEN }}" \
-            -d '{
-              "image": "ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}",
-              "tag": "sha-${{ github.sha }}"
-            }'
-      - name: Deploy to Dokploy Prod (Service 2)
-        run: |
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL_2 }}" \
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.DOKPLOY_TOKEN }}" \
             -d '{

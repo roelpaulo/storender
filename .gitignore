@@ -4,11 +4,11 @@
 !.env.example
 
 # Dependencies
-/vendor/
+vendor/
 /node_modules/
 
 # Runtime storage
-/storage/*
+storage/*
 !/storage/.gitkeep
 /public/uploads/*
 !/public/uploads/.gitkeep
