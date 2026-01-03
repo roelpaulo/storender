@@ -365,8 +365,18 @@
       },
 
       async loadProjects() {
-        const res = await fetch('/api/projects', { credentials: 'same-origin' });
-        if (res.ok) this.projects = await res.json();
+        try {
+          const res = await fetch('/api/projects', { credentials: 'same-origin' });
+          if (res.ok) {
+            this.projects = await res.json();
+          } else {
+            const err = await res.json();
+            console.error('Failed to load projects:', err);
+            window.dispatchEvent(new CustomEvent('notify', { detail: { message: err.error || 'Failed to load projects', type: 'error' } }));
+          }
+        } catch (e) {
+          console.error('Error loading projects:', e);
+        }
       },
 
       async selectProject(p) {
@@ -376,14 +386,32 @@
 
       async loadFiles() {
         if (!this.currentProject) return;
-        const res = await fetch(`/api/projects/${this.currentProject.id}/files`, { credentials: 'same-origin' });
-        if (res.ok) this.files = await res.json();
+        try {
+          const res = await fetch(`/api/projects/${this.currentProject.id}/files`, { credentials: 'same-origin' });
+          if (res.ok) {
+            this.files = await res.json();
+          } else {
+            const err = await res.json();
+            window.dispatchEvent(new CustomEvent('notify', { detail: { message: err.error || 'Failed to load files', type: 'error' } }));
+          }
+        } catch (e) {
+          console.error('Error loading files:', e);
+        }
       },
 
       async loadKeys() {
         if (!this.currentProject) return;
-        const res = await fetch(`/api/projects/${this.currentProject.id}/keys`, { credentials: 'same-origin' });
-        if (res.ok) this.apiKeys = await res.json();
+        try {
+          const res = await fetch(`/api/projects/${this.currentProject.id}/keys`, { credentials: 'same-origin' });
+          if (res.ok) {
+            this.apiKeys = await res.json();
+          } else {
+            const err = await res.json();
+            window.dispatchEvent(new CustomEvent('notify', { detail: { message: err.error || 'Failed to load API keys', type: 'error' } }));
+          }
+        } catch (e) {
+          console.error('Error loading keys:', e);
+        }
       },
 
       showModal(id) {
@@ -417,17 +445,24 @@
       },
 
       async createProject() {
-        const res = await fetch('/api/projects', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: this.modalData.projectName })
-        });
-        if (res.ok) {
-          this.modalData.projectName = '';
-          modal_new_project.close();
-          await this.loadProjects();
-          window.dispatchEvent(new CustomEvent('notify', { detail: { message: 'Project created', type: 'success' } }));
+        try {
+          const res = await fetch('/api/projects', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: this.modalData.projectName })
+          });
+          if (res.ok) {
+            this.modalData.projectName = '';
+            modal_new_project.close();
+            await this.loadProjects();
+            window.dispatchEvent(new CustomEvent('notify', { detail: { message: 'Project created', type: 'success' } }));
+          } else {
+            const err = await res.json();
+            window.dispatchEvent(new CustomEvent('notify', { detail: { message: err.error || 'Failed to create project', type: 'error' } }));
+          }
+        } catch (e) {
+          console.error('Error creating project:', e);
         }
       },
 

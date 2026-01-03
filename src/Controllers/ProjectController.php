@@ -17,9 +17,14 @@ class ProjectController
   public function index()
   {
     $auth = ApiKeyGuard::authenticate();
-    if (!isset($auth['session_user_id']))
+    if (!isset($auth['session_user_id'])) {
+      error_log("ProjectController::index - Unauthorized access attempt");
       Response::error('Unauthorized', 403);
-    $projects = Project::allByUserId($auth['session_user_id']);
+    }
+    
+    $userId = $auth['session_user_id'];
+    $projects = Project::allByUserId($userId);
+    error_log("ProjectController::index - Found " . count($projects) . " projects for user ID: " . $userId);
     Response::json($projects);
   }
 
@@ -37,8 +42,14 @@ class ProjectController
       return Response::error('Project name is required');
     }
 
-    $projectId = Project::create($auth['session_user_id'], $name, $allowedDomains);
-    return Response::json(['message' => 'Project created', 'id' => $projectId], 201);
+    try {
+      $projectId = Project::create($auth['session_user_id'], $name, $allowedDomains);
+      error_log("ProjectController::create - Created project ID: $projectId for user: " . $auth['session_user_id']);
+      return Response::json(['message' => 'Project created', 'id' => $projectId], 201);
+    } catch (\Exception $e) {
+      error_log("ProjectController::create - Error: " . $e->getMessage());
+      return Response::error('Failed to create project: ' . $e->getMessage(), 500);
+    }
   }
 
   public function update($projectId)

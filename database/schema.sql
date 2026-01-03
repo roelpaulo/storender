@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS projects (
     user_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
+    allowed_domains TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

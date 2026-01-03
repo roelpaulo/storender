@@ -18,7 +18,8 @@ RUN docker-php-ext-install \
     pdo_sqlite \
     zip \
     bcmath \
-    opcache
+    opcache \
+    posix
 
 # Set working directory
 WORKDIR /var/www/html
@@ -29,11 +30,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
+# Create necessary directories and set permissions
+RUN mkdir -p /var/www/html/storage /var/www/html/database/data \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/database \
+    && chmod -R 775 /var/www/html/storage /var/www/html/database/data
+
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/database
+# Expose volumes for persistence
+VOLUME ["/var/www/html/storage", "/var/www/html/database/data"]
 
 # Nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
