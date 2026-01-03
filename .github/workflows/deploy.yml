@@ -1,25 +1,52 @@
-name: Deploy to Dokploy
+name: Build and Deploy to Dokploy
 
 on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trigger Dokploy webhook
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/storender:${{ github.sha }}
+
+      - name: Notify Dokploy
         env:
           DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+          IMAGE: ghcr.io/${{ github.repository_owner }}/storender:${{ github.sha }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           if [ -z "${DOKPLOY_WEBHOOK_URL}" ]; then
             echo "DOKPLOY_WEBHOOK_URL secret is not set"
             exit 1
           fi
-          payload=$(printf '{"ref":"%s","repository":"%s"}' "$GITHUB_REF" "$GITHUB_REPOSITORY")
+          payload=$(printf '{"image":"%s","repository":"%s","ref":"%s","sha":"%s"}' "$IMAGE" "$GITHUB_REPOSITORY" "$GITHUB_REF" "$GITHUB_SHA")
           curl -sS -X POST -H "Content-Type: application/json" -d "$payload" "$DOKPLOY_WEBHOOK_URL"
