@@ -10,7 +10,7 @@ services:
       - .:/var/www/html
       - /var/www/html/vendor
       - storage_data:/var/www/html/storage
-      - db_data:/var/www/html/database/data
+      - db_data:/var/www/html/database
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
