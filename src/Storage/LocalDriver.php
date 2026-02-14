@@ -10,7 +10,7 @@ class LocalDriver implements StorageInterface
 
   public function __construct()
   {
-    $this->basePath = rtrim(Config::get('STORAGE_PATH'), '/');
+    $this->basePath = rtrim(Config::get('STORAGE_PATH', dirname(__DIR__, 2) . '/storage'), '/');
     if (!is_dir($this->basePath)) {
       mkdir($this->basePath, 0777, true);
     }

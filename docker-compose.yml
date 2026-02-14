@@ -10,10 +10,13 @@ services:
       - .:/var/www/html
       - /var/www/html/vendor
       - storage_data:/var/www/html/storage
-      - db_data:/var/www/html/database
+      - db_data:/var/www/html/database/data
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
+      - DB_DRIVER=sqlite
+      - DB_FILE=/var/www/html/database/data/storender.sqlite
+      - STORAGE_PATH=/var/www/html/storage
     restart: unless-stopped
 
 volumes:

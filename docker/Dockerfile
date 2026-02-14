@@ -38,7 +38,7 @@ RUN mkdir -p /var/www/html/storage /var/www/html/database/data \
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Expose volumes for persistence
+# Declare persistent volume mount points
 VOLUME ["/var/www/html/storage", "/var/www/html/database/data"]
 
 # Nginx config
@@ -47,8 +47,18 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 # Supervisor config
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Entrypoint script – ensures dirs & permissions on every start
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Setup runtime directories
 RUN mkdir -p /run/nginx /run/supervisord
 
+# Default env vars so data always lands inside the persistent volumes
+ENV DB_DRIVER=sqlite
+ENV DB_FILE=/var/www/html/database/data/storender.sqlite
+ENV STORAGE_PATH=/var/www/html/storage
+
 EXPOSE 80
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

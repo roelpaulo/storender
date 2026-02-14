@@ -15,7 +15,7 @@ class Database
       $driver = Config::get('DB_DRIVER', 'sqlite');
 
       if ($driver === 'sqlite') {
-        $path = Config::get('DB_FILE');
+        $path = Config::get('DB_FILE', dirname(__DIR__, 2) . '/database/data/storender.sqlite');
 
         // Ensure directory exists
         $dir = dirname($path);
